@@ -14,15 +14,29 @@ interface MediaFiltersProps {
     selectedYear: string
     selectedVenue: string
   }) => void
+  initialFilters?: {
+    searchQuery?: string
+    selectedYear?: string
+    selectedVenue?: string
+  }
 }
 
-export function MediaFilters({ mediaType, onFiltersChange }: MediaFiltersProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedYear, setSelectedYear] = useState<string>("all")
-  const [selectedVenue, setSelectedVenue] = useState<string>("all")
+export function MediaFilters({ mediaType, onFiltersChange, initialFilters }: MediaFiltersProps) {
+  const [searchQuery, setSearchQuery] = useState(initialFilters?.searchQuery || "")
+  const [selectedYear, setSelectedYear] = useState<string>(initialFilters?.selectedYear || "all")
+  const [selectedVenue, setSelectedVenue] = useState<string>(initialFilters?.selectedVenue || "all")
   const [years, setYears] = useState<string[]>([])
   const [venues, setVenues] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Update internal state when initialFilters change
+  useEffect(() => {
+    if (initialFilters) {
+      setSearchQuery(initialFilters.searchQuery || "")
+      setSelectedYear(initialFilters.selectedYear || "all")
+      setSelectedVenue(initialFilters.selectedVenue || "all")
+    }
+  }, [initialFilters])
 
   useEffect(() => {
     const fetchFilterOptions = async () => {

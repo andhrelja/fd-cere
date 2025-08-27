@@ -47,3 +47,21 @@ export async function getFilteredMedia(
 
   return items
 }
+
+export async function getFolderHierarchy(): Promise<{
+  years: Array<{
+    year: string
+    mediaTypes: Array<{
+      type: "photos" | "music" | "videos"
+      typeName: string
+      events: Array<{
+        id: string
+        name: string
+        venue: string
+        eventName: string
+      }>
+    }>
+  }>
+}> {
+  return await googleDriveServerService.getFolderHierarchy()
+}

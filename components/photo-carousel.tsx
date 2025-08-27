@@ -18,7 +18,7 @@ export function PhotoCarousel() {
       try {
         setLoading(true)
         setError(null)
-        const photos = await getRandomPhotos(10)
+        const photos = await getRandomPhotos(3)
         setRandomPhotos(photos)
       } catch (err) {
         console.error("[v0] Error loading photos:", err)
@@ -66,6 +66,7 @@ export function PhotoCarousel() {
   }
 
   const currentPhoto = randomPhotos[currentIndex]
+  console.log(currentPhoto)
 
   return (
     <div className="w-full max-w-4xl mx-auto">

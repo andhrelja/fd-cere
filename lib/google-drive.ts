@@ -23,6 +23,7 @@ interface GoogleDriveFile {
   webViewLink: string
   webContentLink: string
   thumbnailLink?: string
+  path?: string
 }
 
 class GoogleDriveService {

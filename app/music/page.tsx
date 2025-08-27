@@ -1,17 +1,33 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { MediaGrid } from "@/components/media-grid"
 import { MediaFilters } from "@/components/media-filters"
 import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 
 export default function MusicPage() {
+  const searchParams = useSearchParams()
   const [filters, setFilters] = useState({
     searchQuery: "",
     selectedYear: "all",
     selectedVenue: "all",
   })
+
+  // Handle URL parameters for filtering
+  useEffect(() => {
+    const search = searchParams.get("search")
+    const venue = searchParams.get("venue")
+    
+    if (search || venue) {
+      setFilters(prev => ({
+        ...prev,
+        searchQuery: search || "",
+        selectedVenue: venue || "all",
+      }))
+    }
+  }, [searchParams])
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -22,7 +38,14 @@ export default function MusicPage() {
           <p className="text-muted-foreground">Poslušajte tradicionalne melodije i naše snimke</p>
         </div>
 
-        <MediaFilters mediaType="music" onFiltersChange={setFilters} />
+        <MediaFilters 
+          mediaType="music" 
+          onFiltersChange={setFilters}
+          initialFilters={{
+            searchQuery: filters.searchQuery,
+            selectedVenue: filters.selectedVenue
+          }}
+        />
         <MediaGrid
           mediaType="music"
           searchQuery={filters.searchQuery}

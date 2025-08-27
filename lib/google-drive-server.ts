@@ -64,16 +64,13 @@ class GoogleDriveServerService {
   private parsePathInfo(path: string): { type: string; year: string; eventInfo: string } {
     // Parse path like: /Multimedia/Photos/2023/Pula-Ljetni_festival_folklora/image.jpg
     const parts = path.split("/")
-    const type = parts[2]?.toLowerCase() || "unknown"
-    const year = parts[3] || "unknown"
-    const eventFolder = parts[4] || "unknown"
-
-    // Extract venue and event from folder name like "Pula-Ljetni_festival_folklora"
-    const [venue, ...eventParts] = eventFolder.split("-")
-    const event = eventParts.join(" ").replace(/_/g, " ")
+    const type = parts[1]?.toLowerCase() == "slike" ? "image" : parts[1]?.toLowerCase() == "muzika" ? "audio" : "video"
+    const year = parts[2] || "unknown"
+    const venue = parts[3] || "unknown"
+    const event = parts[4] || "unknown"
 
     return {
-      type: type === "photos" ? "image" : type === "music" ? "audio" : "video",
+      type,
       year,
       eventInfo: `${venue}|${event}`,
     }
@@ -235,8 +232,130 @@ class GoogleDriveServerService {
         .map((file) => this.convertToMediaItem(file))
         .sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime())
     } catch (error) {
-      console.error("[v0] Error searching media:", error)
+      console.error("[v0] Error searching media from Google Drive:", error)
       return []
+    }
+  }
+
+  async getFolderHierarchy(): Promise<{
+    years: Array<{
+      year: string
+      mediaTypes: Array<{
+        type: "photos" | "music" | "videos"
+        typeName: string
+        events: Array<{
+          id: string
+          name: string
+          venue: string
+          eventName: string
+        }>
+      }>
+    }>
+  }> {
+    try {
+      const multimediaFolder = await this.getFolderContents(this.folderId)
+      const years: Array<{
+        year: string
+        mediaTypes: Array<{
+          type: "photos" | "music" | "videos"
+          typeName: string
+          events: Array<{
+            id: string
+            name: string
+            venue: string
+            eventName: string
+          }>
+        }>
+      }> = []
+
+      // Process each type folder (Photos, Music, Videos)
+      for (const typeFolder of multimediaFolder) {
+        if (typeFolder.mimeType === "application/vnd.google-apps.folder") {
+          const yearFolders = await this.getFolderContents(typeFolder.id)
+
+          // Process each year folder
+          for (const yearFolder of yearFolders) {
+            if (yearFolder.mimeType === "application/vnd.google-apps.folder") {
+              const eventFolders = await this.getFolderContents(yearFolder.id)
+
+              // Find or create year entry
+              let yearEntry = years.find(y => y.year === yearFolder.name)
+              if (!yearEntry) {
+                yearEntry = {
+                  year: yearFolder.name,
+                  mediaTypes: []
+                }
+                years.push(yearEntry)
+              }
+
+              // Find or create media type entry
+              const mediaType = this.getMediaTypeFromFolderName(typeFolder.name)
+              let mediaTypeEntry = yearEntry.mediaTypes.find(mt => mt.type === mediaType)
+              if (!mediaTypeEntry) {
+                mediaTypeEntry = {
+                  type: mediaType,
+                  typeName: this.getMediaTypeDisplayName(mediaType),
+                  events: []
+                }
+                yearEntry.mediaTypes.push(mediaTypeEntry)
+              }
+
+              // Add events
+              for (const eventFolder of eventFolders) {
+                if (eventFolder.mimeType === "application/vnd.google-apps.folder") {
+                  const [venue, ...eventParts] = eventFolder.name.split("-")
+                  const eventName = eventParts.join(" ").replace(/_/g, " ")
+                  
+                  mediaTypeEntry.events.push({
+                    id: eventFolder.id,
+                    name: eventFolder.name,
+                    venue: venue || "Nepoznato mjesto",
+                    eventName: eventName || "Nepoznat događaj"
+                  })
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Sort years descending, media types, and events alphabetically
+      years.sort((a, b) => b.year.localeCompare(a.year))
+      years.forEach(year => {
+        year.mediaTypes.sort((a, b) => a.typeName.localeCompare(b.typeName))
+        year.mediaTypes.forEach(mediaType => {
+          mediaType.events.sort((a, b) => a.venue.localeCompare(b.venue))
+        })
+      })
+
+      return { years }
+    } catch (error) {
+      console.error("[v0] Error fetching folder hierarchy:", error)
+      return { years: [] }
+    }
+  }
+
+  private getMediaTypeFromFolderName(folderName: string): "photos" | "music" | "videos" {
+    const name = folderName.toLowerCase()
+    if (name.includes("slike") || name.includes("photos") || name.includes("foto")) {
+      return "photos"
+    } else if (name.includes("muzika") || name.includes("music") || name.includes("glazba")) {
+      return "music"
+    } else {
+      return "videos"
+    }
+  }
+
+  private getMediaTypeDisplayName(type: "photos" | "music" | "videos"): string {
+    switch (type) {
+      case "photos":
+        return "Fotografije"
+      case "music":
+        return "Glazba"
+      case "videos":
+        return "Videozapisi"
+      default:
+        return "Nepoznato"
     }
   }
 }
