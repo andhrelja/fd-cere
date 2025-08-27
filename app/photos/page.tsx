@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { MediaGrid } from "@/components/media-grid"
 import { MediaFilters } from "@/components/media-filters"
 import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 
-export default function PhotosPage() {
+function PhotosPageContent() {
   const searchParams = useSearchParams()
   const [filters, setFilters] = useState({
     searchQuery: "",
@@ -57,5 +57,26 @@ export default function PhotosPage() {
       </main>
       <Navigation />
     </div>
+  )
+}
+
+export default function PhotosPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background pb-20">
+        <Header />
+        <main className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Učitavanje...</p>
+            </div>
+          </div>
+        </main>
+        <Navigation />
+      </div>
+    }>
+      <PhotosPageContent />
+    </Suspense>
   )
 }
