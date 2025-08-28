@@ -176,13 +176,14 @@ export function MediaGrid({ mediaType, searchQuery, selectedYear, selectedVenue 
             </div>
 
             {/* Media info */}
-            <div className="p-4">
+            {item.type === "image" && (
+              <div className="p-4">
               <div className="flex items-start gap-2 mb-2">
                 {getMediaIcon(item.type)}
-                <h3 className="font-semibold text-sm text-foreground line-clamp-2 flex-1">{item.title}</h3>
+                <h3 className="font-semibold text-sm text-foreground line-clamp-2 flex-1">{item.event}</h3>
               </div>
 
-              <p className="text-xs text-muted-foreground mb-1">{item.event}</p>
+              {/* <p className="text-xs text-muted-foreground mb-1">{item.venue}</p> */}
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>{item.venue}</span>
                 <span>{item.year}</span>
@@ -190,13 +191,62 @@ export function MediaGrid({ mediaType, searchQuery, selectedYear, selectedVenue 
 
               <div className="flex gap-2 mt-3">
                 <Button size="sm" className="flex-1" onClick={() => window.open(item.url, "_blank")}>
-                  {item.type === "audio" ? "Reproduciraj" : item.type === "video" ? "Pogledaj" : "Otvori"}
+                  Otvori
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => window.open(item.url, "_blank")}>
                   <Download className="h-4 w-4" />
                 </Button>
               </div>
             </div>
+            )}
+
+            {item.type === "video" && (
+              <div className="p-4">
+              <div className="flex items-start gap-2 mb-2">
+                {getMediaIcon(item.type)}
+                <h3 className="font-semibold text-sm text-foreground line-clamp-2 flex-1">{item.title}</h3>
+              </div>
+
+              {/* <p className="text-xs text-muted-foreground mb-1">{item.venue}</p> */}
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{item.venue}</span>
+                <span>{item.year}</span>
+              </div>
+
+              <div className="flex gap-2 mt-3">
+                <Button size="sm" className="flex-1" onClick={() => window.open(item.url, "_blank")}>
+                  Pogledaj
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => window.open(item.url, "_blank")}>
+                  <Download className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            )}
+
+            {item.type === "audio" && (
+              <div className="p-4">
+              <div className="flex items-start gap-2 mb-2">
+                {getMediaIcon(item.type)}
+                <h3 className="font-semibold text-sm text-foreground line-clamp-2 flex-1">{item.title}</h3>
+              </div>
+
+              <p className="text-xs text-muted-foreground mb-1">{item.venue}</p>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{item.event}</span>
+                <span>{item.year}</span>
+              </div>
+
+              <div className="flex gap-2 mt-3">
+                <Button size="sm" className="flex-1" onClick={() => window.open(item.url, "_blank")}>
+                  Reproduciraj
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => window.open(item.url, "_blank")}>
+                  <Download className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            )}
           </CardContent>
         </Card>
       ))}
