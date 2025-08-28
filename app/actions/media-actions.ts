@@ -6,10 +6,6 @@ export async function getMediaByType(type: "photos" | "music" | "videos"): Promi
   return await googleDriveServerService.getMediaByType(type)
 }
 
-export async function getRandomPhotos(count = 10): Promise<MediaItem[]> {
-  return await googleDriveServerService.getRandomPhotos(count)
-}
-
 export async function getAvailableYears(): Promise<string[]> {
   return await googleDriveServerService.getAvailableYears()
 }

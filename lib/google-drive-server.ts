@@ -65,14 +65,14 @@ class GoogleDriveServerService {
     // Parse path like: /Multimedia/Photos/2023/Pula-Ljetni_festival_folklora/image.jpg
     const parts = path.split("/")
     const type = parts[1]?.toLowerCase() == "slike" ? "image" : parts[1]?.toLowerCase() == "muzika" ? "audio" : "video"
-    const year = parts[2] || "unknown"
-    const venue = parts[3] || "unknown"
-    const event = parts[4] || "unknown"
+    const year = parts[2].trim() || "unknown"
+    const venue = parts[3].trim() || "unknown"
+    const event = parts[4].trim() || "unknown"
 
     return {
       type,
       year,
-      eventInfo: `${venue}|${event}`,
+      eventInfo: `${venue} | ${event}`,
     }
   }
 
@@ -90,27 +90,31 @@ class GoogleDriveServerService {
     const multimediaFolder = await this.getFolderContents(this.folderId)
 
     // Process each type folder (Photos, Music, Videos)
-    for (const typeFolder of multimediaFolder) {
+    for (const typeFolder of multimediaFolder.filter(folder => Array.from(["Slike", "Muzika", "Video i Film"]).includes(folder.name))) {
       if (typeFolder.mimeType === "application/vnd.google-apps.folder") {
         const yearFolders = await this.getFolderContents(typeFolder.id)
-
         // Process each year folder
         for (const yearFolder of yearFolders) {
           if (yearFolder.mimeType === "application/vnd.google-apps.folder") {
-            const eventFolders = await this.getFolderContents(yearFolder.id)
+            const venueFolders = await this.getFolderContents(yearFolder.id)
 
-            // Process each event folder
-            for (const eventFolder of eventFolders) {
-              if (eventFolder.mimeType === "application/vnd.google-apps.folder") {
-                const mediaFiles = await this.getFolderContents(eventFolder.id)
-
-                // Add path context to each file
-                const filesWithPath = mediaFiles.map((file) => ({
-                  ...file,
-                  path: `/${typeFolder.name}/${yearFolder.name}/${eventFolder.name}/${file.name}`,
-                }))
-
-                allFiles.push(...filesWithPath)
+            for (const venueFolder of venueFolders) {
+              if (venueFolder.mimeType === "application/vnd.google-apps.folder") {
+                const eventFolders = await this.getFolderContents(venueFolder.id)
+                // Process each event folder
+                for (const eventFolder of eventFolders) {
+                  if (eventFolder.mimeType === "application/vnd.google-apps.folder") {
+                    const mediaFiles = await this.getFolderContents(eventFolder.id)
+                    // console.log(mediaFiles)
+                    // Add path context to each file
+                    const filesWithPath = mediaFiles.filter(mediaFile => mediaFile.mimeType !== "application/vnd.google-apps.folder" || mediaFile.name.endsWith(".jpeg") || mediaFile.name.endsWith(".png") || mediaFile.name.endsWith(".mp4") || mediaFile.name.endsWith(".mp3") || mediaFile.name.endsWith(".jpg")).map((file) => ({
+                      ...file,
+                      path: `/${typeFolder.name}/${yearFolder.name}/${venueFolder.name}/${eventFolder.name}/${file.name}`,
+                    }))
+    
+                    allFiles.push(...filesWithPath)
+                  }
+                }
               }
             }
           }
@@ -150,23 +154,13 @@ class GoogleDriveServerService {
       return allFiles
         .filter((file) => {
           const pathInfo = file.path ? this.parsePathInfo(file.path) : { type: "unknown" }
+          // console.log(pathInfo)
           return pathInfo.type === mediaType
         })
         .map((file) => this.convertToMediaItem(file))
         .sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime())
     } catch (error) {
       console.error("[v0] Error fetching media from Google Drive:", error)
-      return []
-    }
-  }
-
-  async getRandomPhotos(count = 10): Promise<MediaItem[]> {
-    try {
-      const photos = await this.getMediaByType("photos")
-      const shuffled = [...photos].sort(() => 0.5 - Math.random())
-      return shuffled.slice(0, count)
-    } catch (error) {
-      console.error("[v0] Error fetching random photos:", error)
       return []
     }
   }

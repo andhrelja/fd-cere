@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Play, Download, Heart, Share2, Music, Video, ImageIcon } from "lucide-react"
 import { getFilteredMedia } from "@/app/actions/media-actions"
 import type { MediaItem } from "@/lib/google-drive-server"
+import Image from "next/image"
 
 interface MediaGridProps {
   mediaType: "photos" | "music" | "videos"
@@ -113,19 +114,25 @@ export function MediaGrid({ mediaType, searchQuery, selectedYear, selectedVenue 
             {/* Media preview */}
             <div className="relative aspect-square bg-muted">
               {item.type === "image" && (
-                <img
-                  src={item.thumbnail || item.url || "/placeholder.svg"}
+                <Image
+                  src={`/api/proxy-image?url=${encodeURIComponent(item.thumbnail || item.url || "/placeholder.svg")}`}
                   alt={item.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                  className="object-cover"
+                  loading="lazy"
                 />
               )}
 
               {item.type === "video" && (
                 <>
-                  <img
-                    src={item.thumbnail || "/placeholder.svg"}
+                  <Image
+                    src={`/api/proxy-image?url=${encodeURIComponent(item.thumbnail || "/placeholder.svg")}`}
                     alt={item.title}
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                    className="object-cover"
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                     <Button size="icon" className="bg-white/90 hover:bg-white text-black">

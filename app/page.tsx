@@ -8,7 +8,7 @@ export default function HomePage() {
       <Header />
       <main className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4">Folklorna Udruga Cere</h1>
+          <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4">Folklorno društvo Cere</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Dobrodošli u našu multimedijsku galeriju. Istražite bogatu tradiciju i kulturu kroz naše fotografije, glazbu
             i videozapise.

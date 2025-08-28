@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Space_Grotesk } from "next/font/google"
 import { DM_Sans } from "next/font/google"
-import "./globals.css"
+import "@/styles/globals.css"
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -17,9 +17,9 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "Folklorna Udruga Cere - Multimedijska Galerija",
+  title: "Folklorno društvo Cere - Multimedijska Galerija",
   description:
-    "Multimedijska galerija Folklorne udruge Cere iz Žminja - fotografije, glazba i videozapisi naših nastupa",
+    "Multimedijska galerija Folklornog društva Cere iz Žminja - fotografije, glazba i videozapisi naših nastupa",
   generator: "v0.app",
 }
 
